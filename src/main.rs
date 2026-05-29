@@ -2,7 +2,7 @@ mod ray;
 mod sphere;
 mod vec3;
 
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Key, Window, WindowOptions, MouseMode};
 use ray::Ray;
 use sphere::{hit_world, Sphere};
 use std::time::Instant;
@@ -76,7 +76,7 @@ fn main() {
     let mut buffer = vec![0_u32; image_width * image_height];
 
     let mut camera_position = Point3::new(0.0, 0.0, 0.0);
-    let look_at = Point3::new(0.0, 0.0, -1.0);
+    let mut look_at = Point3::new(0.0, 0.0, -1.0);
     let move_speed = 0.15;
 
     let mut world = build_world();
@@ -92,6 +92,8 @@ fn main() {
     .expect("Unable to open window");
 
     window.set_target_fps(60);
+
+    let mut mousepos = window.get_mouse_pos(MouseMode::Clamp);
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let elapsed = start.elapsed().as_secs_f64();
@@ -123,6 +125,17 @@ fn main() {
         if window.is_key_down(Key::E) {
             camera_position = camera_position + Vec3::new(0.0, -move_speed, 0.0);
             moved = true;
+        }
+
+        let current_mousepos = window.get_mouse_pos(MouseMode::Clamp);
+
+        if current_mousepos != mousepos {
+
+            let delta = (current_mousepos.unwrap().0 - mousepos.unwrap().0, current_mousepos.unwrap().1 - mousepos.unwrap().1);
+            look_at = look_at + Vec3::new(delta.0 as f64 * 0.01, -delta.1 as f64 * 0.01, 0.0);
+            mousepos = current_mousepos;
+            moved = true;
+
         }
 
         if moved {

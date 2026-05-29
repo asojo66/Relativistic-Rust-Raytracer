@@ -1,6 +1,7 @@
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
+#[allow(dead_code)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
@@ -17,9 +18,9 @@ impl Sphere {
         Self { center, radius }
     }
 
-    pub fn center(&self) -> Point3 {
-        self.center
-    }
+    // pub fn center(&self) -> Point3 {
+    //     self.center
+    // }
 
     pub fn set_center(&mut self, center: Point3) {
         self.center = center;
