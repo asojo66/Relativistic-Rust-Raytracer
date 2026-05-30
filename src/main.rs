@@ -52,10 +52,16 @@ fn render_scene(
     let viewport_width = aspect_ratio * viewport_height;
     let focal_length = 1.0;
 
-    let direction = (look_at - origin).unit_vector();
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 + direction * focal_length;
+    // Build an orthonormal camera basis so the image plane is perpendicular
+    // to the viewing direction regardless of where `look_at` is.
+    let w = (origin - look_at).unit_vector();
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let u = up.cross(w).unit_vector();
+    let v = w.cross(u);
+
+    let horizontal = u * viewport_width;
+    let vertical = v * viewport_height;
+    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - w * focal_length;
 
     for j in 0..image_height {
         for i in 0..image_width {
@@ -94,6 +100,10 @@ fn main() {
     window.set_target_fps(60);
 
     let mut mousepos = window.get_mouse_pos(MouseMode::Clamp);
+    // Camera orientation angles for mouse look (degrees)
+    let mut yaw: f64 = -90.0;
+    let mut pitch: f64 = 0.0;
+    let sensitivity: f64 = 0.15;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let elapsed = start.elapsed().as_secs_f64();
@@ -102,41 +112,83 @@ fn main() {
         world[2].set_center(Point3::new(object_x, 0.0, object_z));
 
         let mut moved = false;
+
+        // Compute camera basis for movement: forward = -w, right = u, up = v
+        let w_cam = (camera_position - look_at).unit_vector();
+        let up_vec = Vec3::new(0.0, 1.0, 0.0);
+        let u_cam = up_vec.cross(w_cam).unit_vector();
+        let v_cam = w_cam.cross(u_cam);
+
         if window.is_key_down(Key::W) {
-            camera_position = camera_position + Vec3::new(0.0, 0.0, -move_speed);
+            camera_position = camera_position - w_cam * move_speed;
+            look_at = look_at - w_cam * move_speed;
             moved = true;
         }
         if window.is_key_down(Key::S) {
-            camera_position = camera_position + Vec3::new(0.0, 0.0, move_speed);
+            camera_position = camera_position + w_cam * move_speed;
+            look_at = look_at + w_cam * move_speed;
             moved = true;
         }
         if window.is_key_down(Key::A) {
-            camera_position = camera_position + Vec3::new(-move_speed, 0.0, 0.0);
+            camera_position = camera_position - u_cam * move_speed;
+            look_at = look_at - u_cam * move_speed;
             moved = true;
         }
         if window.is_key_down(Key::D) {
-            camera_position = camera_position + Vec3::new(move_speed, 0.0, 0.0);
+            camera_position = camera_position + u_cam * move_speed;
+            look_at = look_at + u_cam * move_speed;
             moved = true;
         }
         if window.is_key_down(Key::Q) {
-            camera_position = camera_position + Vec3::new(0.0, move_speed, 0.0);
+            camera_position = camera_position + v_cam * move_speed;
+            look_at = look_at + v_cam * move_speed;
             moved = true;
         }
         if window.is_key_down(Key::E) {
-            camera_position = camera_position + Vec3::new(0.0, -move_speed, 0.0);
+            camera_position = camera_position - v_cam * move_speed;
+            look_at = look_at - v_cam * move_speed;
             moved = true;
         }
 
         let current_mousepos = window.get_mouse_pos(MouseMode::Clamp);
 
-        if current_mousepos != mousepos {
+        // Rotate camera using mouse movement (update yaw/pitch -> front vector)
+        if let (Some((mx, my)), Some((px, py))) = (current_mousepos, mousepos) {
+            let dx = (mx - px) as f64;
+            let dy = (my - py) as f64;
+            if dx != 0.0 || dy != 0.0 {
+                yaw += dx * sensitivity;
+                pitch += -dy * sensitivity; // invert Y so moving mouse up looks up
+                if pitch > 89.0 {
+                    pitch = 89.0;
+                }
+                if pitch < -89.0 {
+                    pitch = -89.0;
+                }
 
-            let delta = (current_mousepos.unwrap().0 - mousepos.unwrap().0, current_mousepos.unwrap().1 - mousepos.unwrap().1);
-            look_at = look_at + Vec3::new(delta.0 as f64 * 0.01, -delta.1 as f64 * 0.01, 0.0);
-            mousepos = current_mousepos;
-            moved = true;
+                let yaw_r = yaw.to_radians();
+                let pitch_r = pitch.to_radians();
+                let front = Vec3::new(
+                    yaw_r.cos() * pitch_r.cos(),
+                    pitch_r.sin(),
+                    yaw_r.sin() * pitch_r.cos(),
+                )
+                .unit_vector();
 
+                look_at = camera_position + front;
+                mousepos = current_mousepos;
+                moved = true;
+            }
         }
+
+        // Re-center the system cursor to trap it inside the window.
+        // Use the window API to set mouse position to the window center so
+        // subsequent deltas are relative to the center.
+        let center_x = (image_width / 2) as i32;
+        let center_y = (image_height / 2) as i32;
+        // This call may vary by minifb version; most provide `set_mouse_pos(x,y)`.
+        let _ = window.set_cursor_pos(center_x, center_y);
+        mousepos = Some((center_x, center_y));
 
         if moved {
             render_scene(&mut buffer, image_width, image_height, camera_position, look_at, &world);
