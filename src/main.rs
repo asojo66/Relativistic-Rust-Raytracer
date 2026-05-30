@@ -5,6 +5,7 @@ mod vec3;
 use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
 use ray::Ray;
 use sphere::{hit_world, Sphere};
+use rayon::prelude::*;
 use std::time::Instant;
 use vec3::{Color, Point3, Vec3};
 
@@ -62,15 +63,54 @@ fn render_scene(
     let vertical = v * viewport_height;
     let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - w * focal_length;
 
-    for j in 0..image_height {
-        for i in 0..image_width {
-            let u = i as f64 / (image_width as f64 - 1.0);
-            let v = (image_height - 1 - j) as f64 / (image_height as f64 - 1.0);
-            let r = Ray::new(
-                origin,
-                lower_left_corner + horizontal * u + vertical * v - origin,
-            );
-            buffer[j * image_width + i] = color_to_pixel(ray_color(&r, world));
+    // tiled parallel rendering: divide image into tiles and render each tile in parallel
+    let tile_size: usize = 32;
+    let tiles_x = (image_width + tile_size - 1) / tile_size;
+    let tiles_y = (image_height + tile_size - 1) / tile_size;
+
+    let mut tiles = Vec::with_capacity(tiles_x * tiles_y);
+    for ty in 0..tiles_y {
+        for tx in 0..tiles_x {
+            let x0 = tx * tile_size;
+            let y0 = ty * tile_size;
+            let w = ((x0 + tile_size).min(image_width)) - x0;
+            let h = ((y0 + tile_size).min(image_height)) - y0;
+            tiles.push((x0, y0, w, h));
+        }
+    }
+
+    // render each tile in parallel into a temporary buffer, then copy back
+    let rendered_tiles: Vec<(usize, usize, usize, usize, Vec<u32>)> = tiles
+        .par_iter()
+        .map(|&(x0, y0, w, h)| {
+            let mut local = Vec::with_capacity(w * h);
+            for row in 0..h {
+                let j = y0 + row;
+                for col in 0..w {
+                    let i = x0 + col;
+                    let u = i as f64 / (image_width as f64 - 1.0);
+                    let v = (image_height - 1 - j) as f64 / (image_height as f64 - 1.0);
+                    let r = Ray::new(
+                        origin,
+                        lower_left_corner + horizontal * u + vertical * v - origin,
+                    );
+                    local.push(color_to_pixel(ray_color(&r, world)));
+                }
+            }
+            (x0, y0, w, h, local)
+        })
+        .collect();
+
+    // copy tiles back into main buffer (single-threaded write)
+    for (x0, y0, w, h, local) in rendered_tiles {
+        for row in 0..h {
+            let j = y0 + row;
+            for col in 0..w {
+                let i = x0 + col;
+                let src_idx = row * w + col;
+                let dst_idx = j * image_width + i;
+                buffer[dst_idx] = local[src_idx];
+            }
         }
     }
 }
