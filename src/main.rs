@@ -2,15 +2,18 @@ mod camera;
 mod rrrwindow;
 mod vector;
 mod render;
-mod geometry;
 mod ray;
+mod geometry;
 
+use crate::render::render;
+use crate::camera::Camera;
+use crate::geometry::{Objects, Sphere};
+use crate::vector::Vector3;
 use minifb::{Key};
 
 const WIDTH: usize = 640;
 const HEIGHT: usize = 480;
 const FPS: usize = 60;
-
 
 fn main() {
 
@@ -20,23 +23,62 @@ fn main() {
     // Create the window instance
     let mut window = rrrwindow::initialize_window(WIDTH, HEIGHT, FPS);
 
+    let world = vec![
+        Objects::Sphere(Sphere::new(
+            Vector3::new(5.0, 0.0, 0.0),
+            1.0,
+        )),
+    ];
+
+    let mut cam = Camera::new(
+                vector::Vector3::new(0.0, 0.0, 0.0),
+                1.0,
+                vector::Vector3::new(1.0, 0.0, 0.0),
+                0.0,
+                90.0,
+    );
+
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
 
         // Update the buffer with pixel data (for demonstration, we fill it with a gradient)
 
-        for y in 0..HEIGHT {
-            for x in 0..WIDTH {
-                let r = (x as f32 / WIDTH as f32 * 255.0) as u32;
-                let g = (y as f32 / HEIGHT as f32 * 255.0) as u32;
-                let b = 128; // Fixed blue value
-                buffer[y * WIDTH + x] = (r << 16) | (g << 8) | b; // Combine RGB into a single u32
-            }
-        }
+        buffer = render(
+            WIDTH, 
+            HEIGHT, 
+            &cam,
+            &world,
+            0.0
+        );
 
         // 5. Actualizar la ventana con el búfer modificado
         window
             .update_with_buffer(&buffer, WIDTH, HEIGHT)
             .unwrap();
+
+
+        if window.is_key_down(Key::W) {
+            cam.set_position(
+                cam.position() + cam.direction() * 0.1
+            )
+        }
+        if window.is_key_down(Key::S) {
+            cam.set_position(
+                cam.position() - cam.direction() * 0.1
+            )
+        }
+        if window.is_key_down(Key::D) {
+            cam.set_position(
+                cam.position() + cam.u() * 0.1
+            )
+        }
+
+        if window.is_key_down(Key::A) {
+            cam.set_position(
+                cam.position() - cam.u() * 0.1
+            )
+        }
+
+
     }
 }

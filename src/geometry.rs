@@ -23,4 +23,19 @@ impl Sphere {
             Some((-b - discriminant.sqrt()) / (2.0 * a))
         }
     }
+
+}
+
+pub enum Objects {
+    Sphere(Sphere),
+}
+
+impl Objects {
+    pub fn intersect(&self, ray: &Ray) -> Option<f32> {
+        match self {
+            Objects::Sphere(s) => {
+                s.intersect(ray)
+            }
+        }
+    }
 }
