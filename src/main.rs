@@ -28,6 +28,10 @@ fn main() {
             Vector3::new(5.0, 0.0, 0.0),
             1.0,
         )),
+        Objects::Sphere(Sphere::new(
+            Vector3::new(5.0, 0.0, -11.0),
+            10.0,
+        ))
     ];
 
     let mut cam = Camera::new(
@@ -76,6 +80,18 @@ fn main() {
         if window.is_key_down(Key::A) {
             cam.set_position(
                 cam.position() - cam.u() * 0.1
+            )
+        }
+
+        if window.is_key_down(Key::Space) {
+            cam.set_position(
+                cam.position() + cam.v() * 0.1
+            )
+        }
+
+        if window.is_key_down(Key::LeftShift) {
+            cam.set_position(
+                cam.position() - cam.v() * 0.1
             )
         }
 

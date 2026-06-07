@@ -10,13 +10,22 @@ pub fn render(width: usize, height: usize, camera: &Camera, world: &Vec<Objects>
         for x in 0..width {
             
             let ray = camera.get_ray(x, y, width, height);
+            
+            let mut t: Option<f32> = None;
 
             for object in world {
-                if let Some(t) = object.intersect(&ray) {
-                    buffer[y * width + x] = 0xFF0000; 
-                } else {
-                    buffer[y * width + x] = 0x000000
+
+                let t_current: Option<f32> = object.intersect(&ray);
+                if t_current.is_some() {
+                    t = t_current;
                 }
+                
+            }
+
+            if let Some(t) = t{
+                    buffer[y * width + x] = 0xFF0000; 
+            } else {
+                    buffer[y * width + x] = 0x000000
             }
 
         }

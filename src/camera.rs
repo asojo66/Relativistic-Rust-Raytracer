@@ -15,7 +15,7 @@ impl Camera {
 
     pub fn new(position: Vector3, f_length: f32, direction: Vector3, angle: f32, fov: f32) -> Self {
 
-        let u_vec = direction.cross(&Vector3::new(0.0, 1.0, 0.0)).rotate(direction, angle).normalize();
+        let u_vec = direction.cross(&Vector3::new(0.0, 0.0, 1.0)).rotate(direction, angle).normalize();
         let v_vec = u_vec.cross(&direction).rotate(direction, angle).normalize();
 
         Camera {
@@ -33,12 +33,12 @@ impl Camera {
 
         let focal_point = self.position - self.direction * self.f_length;
 
-        let h_size = 2.0 * self.f_length * (self.fov.to_radians() / 2.0).tan();
-        let w_size = h_size * (width as f32 / height as f32);
+        let hor_size = 2.0 * self.f_length * (self.fov.to_radians() / 2.0).tan();
+        let ver_size = hor_size * (height as f32 / width as f32);
 
-        let left_upper_corner = self.v * (h_size / 2.0)-self.u * (w_size / 2.0);
+        let left_upper_corner = self.position - self.u * (hor_size / 2.0) + self.v * (ver_size / 2.0);
 
-        let in_plane = left_upper_corner + ix as f32*h_size / width as f32 * self.u - iy as f32*h_size / height as f32 * self.v;
+        let in_plane = left_upper_corner + ix as f32*hor_size / width as f32 * self.u - iy as f32*ver_size / height as f32 * self.v;
 
         Ray::new(
             focal_point,
