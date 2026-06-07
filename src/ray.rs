@@ -1,25 +1,32 @@
-use crate::vec3::Vec3;
+use crate::vector::Vector3;
 
-#[derive(Clone, Copy, Debug)]
 pub struct Ray {
-    origin: Vec3,
-    direction: Vec3,
+    origin: Vector3,
+    direction: Vector3,
+    o_time: f32,
 }
-
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self { origin, direction }
+    pub fn new(origin: Vector3, direction: Vector3, o_time: f32) -> Self {
+        Ray {
+            origin,
+            direction: direction.normalize(),
+            o_time,
+        }
     }
 
-    pub fn origin(&self) -> Vec3 {
+    pub fn at(&self, t: f32) -> Vector3 {
+        self.origin + self.direction * t
+    }
+
+    pub fn origin(&self) -> Vector3 {
         self.origin
     }
 
-    pub fn direction(&self) -> Vec3 {
+    pub fn direction(&self) -> Vector3 {
         self.direction
     }
 
-    pub fn at(&self, t: f64) -> Vec3 {
-        self.origin + self.direction * t
+    pub fn time(&self) -> f32 {
+        self.o_time
     }
 }
