@@ -1,5 +1,6 @@
 use crate::vector::Vector3;
 use crate::ray::Ray;
+use crate::render::Hit;
 
 pub struct Sphere {
     center: Vector3,
@@ -10,19 +11,19 @@ impl Sphere {
         Sphere { center, radius }
     }
 
-    pub fn intersect(&self, ray: &Ray) -> Option<f32> {
-        
+    pub fn intersect(&self, ray: &Ray) -> Hit {
+
         let oc = ray.origin() - self.center;
         let a = ray.direction().norm2();
         let b = 2.0 * oc.dot(&ray.direction());
         let c = oc.dot(&oc) - self.radius * self.radius;
         let discriminant: f32 = b * b - 4.0 * a * c;
         
-
+        let mut return_hit = Hit::new();
 
         if discriminant < 0.0 {
 
-            None
+            return_hit
 
         } else  {
 
@@ -31,11 +32,14 @@ impl Sphere {
             let t = (e + d).min(e - d);
 
             if t > 0.0 {
-                Some(t)
-            } else {
-                None
-            }
 
+                return_hit.set_hit(ray.at(t), t, (ray.at(t) - self.center).normalize());
+                return_hit
+
+            } else {
+                return_hit
+            }
+            
         }
     }
 
@@ -46,7 +50,7 @@ pub enum Objects {
 }
 
 impl Objects {
-    pub fn intersect(&self, ray: &Ray) -> Option<f32> {
+    pub fn intersect(&self, ray: &Ray) -> Hit {
         match self {
             Objects::Sphere(s) => {
                 s.intersect(ray)
