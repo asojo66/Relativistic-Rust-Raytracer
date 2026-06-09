@@ -4,7 +4,7 @@ use crate::ray::Ray;
 use crate::vector::Vector3;
 
 pub struct Hit{
-    hitQ: bool,
+    hit_q: bool,
     point: Vector3,
     t: f32,
     normal: Vector3,
@@ -12,7 +12,7 @@ pub struct Hit{
 impl Hit {
     pub fn new() -> Self {
         Hit {
-            hitQ: false,
+            hit_q: false,
             point: Vector3::new(0.0, 0.0, 0.0),
             t: f32::INFINITY,
             normal: Vector3::new(0.0, 0.0, 0.0),
@@ -21,7 +21,7 @@ impl Hit {
 
     pub fn set_hit(&mut self, point: Vector3, t: f32, normal: Vector3) {
 
-        self.hitQ = true;
+        self.hit_q = true;
 
         self.point = point;
         self.t = t;
@@ -64,8 +64,7 @@ pub fn render(width: usize, height: usize, camera: &Camera, world: &Vec<Objects>
 
             if hit.t() < f32::INFINITY {
                 
-                        let light_int = hit.normal().dot(&(camera.position()-hit.point()).normalize()).clamp(0.34, 1.0);
-                        // let light_int = hit.normal().dot(&(hit.point()-Vector3::new(0.0, 0.0, -5.0)).normalize()).clamp(0.2, 1.0);
+                        let light_int = (hit.normal().dot(&(camera.position()-hit.point()).normalize())+0.5).clamp(0.0, 1.0);
 
                         let intensity = (light_int * 255.0) as u32;
                         buffer[y * width + x] = intensity << 16;

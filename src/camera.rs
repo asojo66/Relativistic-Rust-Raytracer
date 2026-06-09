@@ -7,7 +7,6 @@ pub struct Camera {
     direction: Vector3,
     u : Vector3,
     v : Vector3,
-    angle: f32,
     fov: f32,
 }
 
@@ -24,7 +23,6 @@ impl Camera {
             direction: direction.normalize(),
             u: u_vec,
             v: v_vec,
-            angle,
             fov,
         }
     }
@@ -72,9 +70,23 @@ impl Camera {
         self.fov
     }
 
-    pub fn angle(&self) -> f32 {
-        self.angle
+    pub fn rotate(&mut self, phi: f32, theta: f32) {
+        
+        self.u = self.u.rotate(Vector3::new(0.0,0.0,1.0), phi).normalize();
+        self.v = self.v.rotate(Vector3::new(0.0,0.0,1.0), phi).rotate(self.u, theta).normalize();
+        self.direction = self.direction.rotate(Vector3::new(0.0,0.0,1.0), phi).rotate(self.u, theta).normalize();
+        
     }
+    
+    pub fn spin(&mut self, phi: f32, theta: f32) {
+
+        self.u = self.u.rotate(self.v, phi).normalize();
+        self.direction = self.direction.rotate(self.v, phi).rotate(self.u, theta).normalize();
+        self.v = self.v.rotate(self.u, theta).normalize();
+
+    }
+
+
 
     
 }

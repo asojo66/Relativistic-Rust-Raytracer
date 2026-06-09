@@ -95,6 +95,22 @@ fn main() {
             )
         }
 
+        if window.is_key_down(Key::Up) {
+            cam.rotate(0.0, 0.05);
+        }
+
+        if window.is_key_down(Key::Down) {
+            cam.rotate(0.0, -0.05);
+        }
+
+        if window.is_key_down(Key::Left) {
+            cam.rotate(0.05, 0.0);
+        }
+
+        if window.is_key_down(Key::Right) {
+            cam.rotate(-0.05, 0.0);
+        }
+
 
     }
 }

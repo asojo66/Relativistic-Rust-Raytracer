@@ -48,7 +48,7 @@ impl Vector3 {
         let sin_theta = angle.sin();
         *self * cos_theta + k.cross(self) * sin_theta + k * (k.dot(self) * (1.0 - cos_theta))
     }
-    
+
     pub fn x(&self) -> f32 {
         self.x
     }
