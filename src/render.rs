@@ -63,11 +63,18 @@ pub fn render(width: usize, height: usize, camera: &Camera, world: &Vec<Objects>
             }
 
             if hit.t() < f32::INFINITY {
+                // Dirección de luz desde arriba y atrás
+                let light_dir = Vector3::new(1.0, 2.0, 1.0).normalize();
                 
-                        let light_int = (hit.normal().dot(&(camera.position()-hit.point()).normalize())+0.5).clamp(0.0, 1.0);
+                // Iluminación difusa (Ley de Lambert)
+                let diffuse = hit.normal().dot(&light_dir).max(0.0);
+                
+                // Luz ambiental para suavizar sombras
+                let ambient = 0.2;
+                let light_int = (diffuse + ambient).min(1.0);
 
-                        let intensity = (light_int * 255.0) as u32;
-                        buffer[y * width + x] = intensity << 16;
+                let intensity = (light_int * 255.0) as u32;
+                buffer[y * width + x] = intensity << 16;
             
             } else {
                     buffer[y * width + x] = 0x88a9f2
