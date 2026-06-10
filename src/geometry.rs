@@ -1,6 +1,7 @@
 use crate::vector::Vector3;
 use crate::ray::Ray;
 use crate::render::Hit;
+use std::slice::Iter;
 
 pub struct InfinitePlane {
     point: Vector3,
@@ -12,14 +13,6 @@ impl InfinitePlane {
         
         InfinitePlane {point, normal}
 
-    }
-
-    pub fn get_point(&self) ->  Vector3 {
-        self.point
-    }
-
-    pub fn get_normal(&self) ->  Vector3 {
-        self.normal
     }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
@@ -39,8 +32,8 @@ impl InfinitePlane {
                 hit
 
             } else {
-
-                hit.set_hit(ray.at(t), t, self.normal);
+                let o_time = ray.o_time();
+                hit.set_hit(ray.at(t+o_time), t + o_time , self.normal);
                 hit
 
             }
@@ -83,7 +76,9 @@ impl Sphere {
 
             if t > 0.0 {
 
-                return_hit.set_hit(ray.at(t), t, (ray.at(t) - self.center).normalize());
+                let c_time = t + ray.o_time();
+
+                return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - self.center).normalize());
                 return_hit
 
             } else {
@@ -115,4 +110,69 @@ impl Objects {
         }
     }
 
+}
+
+pub struct World {
+    names: Vec<String>,
+    objects: Vec<Objects>
+}
+
+pub struct WorldIter<'a> {
+    names: Iter<'a, String>,
+    objects: Iter<'a, Objects>,
+}
+
+impl<'a> Iterator for WorldIter<'a> {
+    type Item = (&'a str, &'a Objects);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match (self.names.next(), self.objects.next()) {
+            (Some(name), Some(object)) => Some((name.as_str(), object)),
+            _ => None,
+        }
+    }
+}
+impl World {
+    pub fn new() -> Self {
+        World {
+            names: Vec::new(),
+            objects: Vec::new(),
+        }
+    }
+    pub fn add_object(&mut self, name: &str, object: Objects) -> Result<(), String> {
+        if self.names.iter().any(|existing| existing == name) {
+            return Err(format!("object name '{}' already exists", name));
+        }
+
+        self.names.push(name.to_string());
+        self.objects.push(object);
+
+        Ok(())
+    }
+
+    pub fn get_object(&self, name: &str) -> Option<&Objects> {
+        self.names
+            .iter()
+            .position(|existing| existing == name)
+            .map(|index| &self.objects[index])
+    }
+
+    pub fn get_object_mut(&mut self, name: &str) -> Option<&mut Objects> {
+        self.names
+            .iter()
+            .position(|existing| existing == name)
+            .map(move |index| &mut self.objects[index])
+    }
+}
+
+impl<'a> IntoIterator for &'a World {
+    type Item = (&'a str, &'a Objects);
+    type IntoIter = WorldIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        WorldIter {
+            names: self.names.iter(),
+            objects: self.objects.iter(),
+        }
+    }
 }

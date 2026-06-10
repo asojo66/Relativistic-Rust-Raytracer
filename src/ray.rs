@@ -7,6 +7,7 @@ pub struct Ray {
     o_time: f32,
 }
 impl Ray {
+    
     pub fn new(origin: Vector3, direction: Vector3, speed:f32, o_time: f32) -> Self {
         Ray {
             origin,
@@ -35,4 +36,5 @@ impl Ray {
     pub fn o_time(&self) -> f32 {
         self.o_time
     }
+
 }

@@ -1,6 +1,5 @@
 use crate::camera::Camera;
-use crate::geometry::Objects;
-use crate::ray::Ray;
+use crate::geometry::World;
 use crate::vector::Vector3;
 
 pub struct Hit{
@@ -29,10 +28,6 @@ impl Hit {
 
     }
 
-    pub fn point(&self) -> Vector3 {
-        self.point
-    }
-
     pub fn t(&self) -> f32 {
         self.t
     }
@@ -42,17 +37,17 @@ impl Hit {
     }
 }
 
-pub fn render(width: usize, height: usize, camera: &Camera, world: &Vec<Objects>, dtime: f32, ray_speed: f32) -> Vec<u32>{
+pub fn render(width: usize, height: usize, camera: &Camera, world: &World, t: f32, ray_speed: f32) -> Vec<u32>{
 
     let mut buffer: Vec<u32> = vec![0; width * height];
 
     for y in 0..height {
         for x in 0..width {
             
-            let ray = camera.get_ray(x, y, width, height, ray_speed);
+            let ray = camera.get_ray(x, y, width, height, ray_speed, t);
             let mut hit = Hit::new();
 
-            for object in world {
+            for (_, object) in world {
 
                 let hit_current = object.intersect(&ray);
 

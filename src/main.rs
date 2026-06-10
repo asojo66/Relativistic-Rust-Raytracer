@@ -1,5 +1,5 @@
 mod camera;
-mod rrrwindow;
+mod window;
 mod vector;
 mod render;
 mod ray;
@@ -7,7 +7,7 @@ mod geometry;
 
 use crate::render::render;
 use crate::camera::Camera;
-use crate::geometry::{Objects, Sphere, InfinitePlane};
+use crate::geometry::{Objects, Sphere, InfinitePlane, World};
 use crate::vector::Vector3;
 use minifb::{Key};
 
@@ -23,18 +23,23 @@ fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
 
     // Create the window instance
-    let mut window = rrrwindow::initialize_window(WIDTH, HEIGHT, FPS);
+    let mut window = window::initialize_window(WIDTH, HEIGHT, FPS);
 
-    let world = vec![
-        Objects::Sphere(Sphere::new(
-            Vector3::new(5.0, 0.0, 0.0),
-            1.0,
-        )),
-        Objects::InfinitePlane(InfinitePlane::new(
-            Vector3::new(0.0, 0.0, -1.0),
-            Vector3::new(0.0, 0.0, 1.0)
-        ))
-    ];
+    let mut world: World = World::new();
+    let _ = world.add_object(
+            "sph1",
+            Objects::Sphere(Sphere::new(
+                Vector3::new(5.0, 0.0, 0.0),
+                1.0,
+            )),
+    );
+    let _ = world.add_object(
+            "pln1",
+            Objects::InfinitePlane(InfinitePlane::new(
+                Vector3::new(0.0, 0.0, -1.0),
+                Vector3::new(0.0, 0.0, 1.0),
+            )),
+    ); //.expect("failed to add pln1 to world");
 
     let mut cam = Camera::new(
                 vector::Vector3::new(0.0, 0.0, 0.0),
@@ -44,6 +49,8 @@ fn main() {
                 90.0,
     );
 
+    let mut t = 0.0; 
+    let dt = 1.0 / FPS as f32;
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
 
@@ -54,14 +61,12 @@ fn main() {
             HEIGHT, 
             &cam,
             &world,
-            0.0,
+            t,
             RAYSPEED
         );
 
         // 5. Actualizar la ventana con el búfer modificado
-        window
-            .update_with_buffer(&buffer, WIDTH, HEIGHT)
-            .unwrap();
+        window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
         
         let mut camspeed = 0.1;
 
@@ -119,6 +124,7 @@ fn main() {
             cam.rotate(-0.05, 0.0);
         }
 
+        t += dt;
 
     }
 }

@@ -1,5 +1,5 @@
 use crate::vector::Vector3;
-use crate::ray::{self, Ray};
+use crate::ray::Ray;
 
 pub struct Camera {
     position: Vector3,
@@ -27,7 +27,7 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, ix:usize, iy:usize, width: usize, height: usize, rayspeed: f32) -> Ray {
+    pub fn get_ray(&self, ix:usize, iy:usize, width: usize, height: usize, rayspeed: f32, t: f32) -> Ray {
 
         let focal_point = self.position - self.direction * self.f_length;
 
@@ -42,7 +42,7 @@ impl Camera {
             focal_point,
             (in_plane - focal_point).normalize(),
             rayspeed,
-            0.0
+            t
         )
             
     }
@@ -67,10 +67,6 @@ impl Camera {
         self.v
     }
 
-    pub fn fov(&self) -> f32 {
-        self.fov
-    }
-
     pub fn rotate(&mut self, phi: f32, theta: f32) {
         
         self.u = self.u.rotate(Vector3::new(0.0,0.0,1.0), phi).normalize();
@@ -79,15 +75,11 @@ impl Camera {
         
     }
     
-    pub fn spin(&mut self, phi: f32, theta: f32) {
+    // pub fn spin(&mut self, phi: f32, theta: f32) {
 
-        self.u = self.u.rotate(self.v, phi).normalize();
-        self.direction = self.direction.rotate(self.v, phi).rotate(self.u, theta).normalize();
-        self.v = self.v.rotate(self.u, theta).normalize();
+    //     self.u = self.u.rotate(self.v, phi).normalize();
+    //     self.direction = self.direction.rotate(self.v, phi).rotate(self.u, theta).normalize();
+    //     self.v = self.v.rotate(self.u, theta).normalize();
 
-    }
-
-
-
-    
+    // }
 }
