@@ -5,14 +5,12 @@ use crate::render::Hit;
 pub struct InfinitePlane {
     point: Vector3,
     normal: Vector3,
-    c: f32
 }
 impl InfinitePlane {
 
     pub fn new(point: Vector3, normal: Vector3) -> Self {
         
-        let c = point.dot(&normal);
-        InfinitePlane {point, normal, c}
+        InfinitePlane {point, normal}
 
     }
 
@@ -24,22 +22,17 @@ impl InfinitePlane {
         self.normal
     }
 
-    pub fn get_c(&self) -> f32 {
-        self.c
-    }
-
     pub fn intersect(&self, ray: &Ray) -> Hit {
 
-        let a = self.normal.dot(&ray.origin());
+        let a = self.normal.dot(&(self.point - ray.origin()));
         let b = ray.direction().dot(&self.normal);
-        let c = self.c;
         
         let mut hit = Hit::new();
         if b == 0.0 {
             hit
         } else {
             
-            let t = (c - a)/b;
+            let t = a/b;
 
             if t < 0.0 {
                 hit
