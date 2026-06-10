@@ -59,39 +59,44 @@ fn main() {
         window
             .update_with_buffer(&buffer, WIDTH, HEIGHT)
             .unwrap();
+        
+        let mut camspeed = 0.1;
 
+        if window.is_key_down(Key::LeftCtrl) {
+            camspeed = 0.3;
+        }
 
         if window.is_key_down(Key::W) {
             cam.set_position(
-                cam.position() + cam.direction() * 0.1
+                cam.position() + cam.direction() * camspeed
             )
         }
         if window.is_key_down(Key::S) {
             cam.set_position(
-                cam.position() - cam.direction() * 0.1
+                cam.position() - cam.direction() * camspeed
             )
         }
         if window.is_key_down(Key::D) {
             cam.set_position(
-                cam.position() + cam.u() * 0.1
+                cam.position() + cam.u() * camspeed
             )
         }
 
         if window.is_key_down(Key::A) {
             cam.set_position(
-                cam.position() - cam.u() * 0.1
+                cam.position() - cam.u() * camspeed
             )
         }
 
         if window.is_key_down(Key::Space) {
             cam.set_position(
-                cam.position() + cam.v() * 0.1
+                cam.position() + cam.v() * camspeed
             )
         }
 
         if window.is_key_down(Key::LeftShift) {
             cam.set_position(
-                cam.position() - cam.v() * 0.1
+                cam.position() - cam.v() * camspeed
             )
         }
 
