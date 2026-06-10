@@ -15,6 +15,8 @@ const WIDTH: usize = 640;
 const HEIGHT: usize = 480;
 const FPS: usize = 60;
 
+const RAYSPEED: f32 = 1.0;
+
 fn main() {
 
     // Initialize buffer storage
@@ -52,7 +54,8 @@ fn main() {
             HEIGHT, 
             &cam,
             &world,
-            0.0
+            0.0,
+            RAYSPEED
         );
 
         // 5. Actualizar la ventana con el búfer modificado

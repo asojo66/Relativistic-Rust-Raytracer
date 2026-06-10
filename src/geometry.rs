@@ -32,10 +32,12 @@ impl InfinitePlane {
             hit
         } else {
             
-            let t = a/b;
+            let t = a/b/ray.speed();
 
             if t < 0.0 {
+
                 hit
+
             } else {
 
                 hit.set_hit(ray.at(t), t, self.normal);
@@ -77,7 +79,7 @@ impl Sphere {
 
             let d  = discriminant.sqrt() / (2.0 * a);
             let e  = -b / (2.0 * a);
-            let t = (e + d).min(e - d);
+            let t = (e + d).min(e - d)/ray.speed();
 
             if t > 0.0 {
 

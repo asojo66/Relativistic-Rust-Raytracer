@@ -1,5 +1,5 @@
 use crate::vector::Vector3;
-use crate::ray::Ray;
+use crate::ray::{self, Ray};
 
 pub struct Camera {
     position: Vector3,
@@ -27,7 +27,7 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, ix:usize, iy:usize, width: usize, height: usize) -> Ray {
+    pub fn get_ray(&self, ix:usize, iy:usize, width: usize, height: usize, rayspeed: f32) -> Ray {
 
         let focal_point = self.position - self.direction * self.f_length;
 
@@ -41,7 +41,8 @@ impl Camera {
         Ray::new(
             focal_point,
             (in_plane - focal_point).normalize(),
-            0.0,
+            rayspeed,
+            0.0
         )
             
     }
