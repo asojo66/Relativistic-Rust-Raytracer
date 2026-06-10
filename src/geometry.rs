@@ -2,6 +2,61 @@ use crate::vector::Vector3;
 use crate::ray::Ray;
 use crate::render::Hit;
 
+pub struct InfinitePlane {
+    point: Vector3,
+    normal: Vector3,
+    c: f32
+}
+impl InfinitePlane {
+
+    pub fn new(point: Vector3, normal: Vector3) -> Self {
+        
+        let c = point.dot(&normal);
+        InfinitePlane {point, normal, c}
+
+    }
+
+    pub fn get_point(&self) ->  Vector3 {
+        self.point
+    }
+
+    pub fn get_normal(&self) ->  Vector3 {
+        self.normal
+    }
+
+    pub fn get_c(&self) -> f32 {
+        self.c
+    }
+
+    pub fn intersect(&self, ray: &Ray) -> Hit {
+
+        let a = self.normal.dot(&ray.origin());
+        let b = ray.direction().dot(&self.normal);
+        let c = self.c;
+        
+        let mut hit = Hit::new();
+        if b == 0.0 {
+            hit
+        } else {
+            
+            let t = (c - a)/b;
+
+            if t < 0.0 {
+                hit
+            } else {
+
+                hit.set_hit(ray.at(t), t, self.normal);
+                hit
+
+            }
+
+        }
+
+        
+    }
+
+}
+
 pub struct Sphere {
     center: Vector3,
     radius: f32,
@@ -47,14 +102,22 @@ impl Sphere {
 
 pub enum Objects {
     Sphere(Sphere),
+    InfinitePlane(InfinitePlane)
 }
 
 impl Objects {
+
     pub fn intersect(&self, ray: &Ray) -> Hit {
         match self {
+
             Objects::Sphere(s) => {
                 s.intersect(ray)
             }
+
+            Objects::InfinitePlane(p) => {
+                p.intersect(ray)
+            }
         }
     }
+
 }

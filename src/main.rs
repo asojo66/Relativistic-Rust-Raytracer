@@ -7,7 +7,7 @@ mod geometry;
 
 use crate::render::render;
 use crate::camera::Camera;
-use crate::geometry::{Objects, Sphere};
+use crate::geometry::{Objects, Sphere, InfinitePlane};
 use crate::vector::Vector3;
 use minifb::{Key};
 
@@ -28,9 +28,9 @@ fn main() {
             Vector3::new(5.0, 0.0, 0.0),
             1.0,
         )),
-        Objects::Sphere(Sphere::new(
-            Vector3::new(5.0, 0.0, -11.0),
-            10.0,
+        Objects::InfinitePlane(InfinitePlane::new(
+            Vector3::new(0.0, 0.0, -1.0),
+            Vector3::new(0.0, 0.0, 1.0)
         ))
     ];
 
