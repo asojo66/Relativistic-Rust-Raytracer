@@ -7,14 +7,19 @@ use std::slice::Iter;
 pub struct InfinitePlane {
     point: Vector3,
     normal: Vector3,
-    anim: Animation
+    anim: Animation,
+    color: u32
 }
 impl InfinitePlane {
 
-    pub fn new(point: Vector3, normal: Vector3, anim: Animation) -> Self {
+    pub fn new(point: Vector3, normal: Vector3, anim: Animation, color: u32) -> Self {
         
-        InfinitePlane {point, normal, anim}
+        InfinitePlane {point, normal, anim, color}
 
+    }
+
+    pub fn color(&self) -> u32 {
+        self.color
     }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
@@ -62,15 +67,20 @@ impl InfinitePlane {
 pub struct Sphere {
     center: Vector3,
     radius: f32,
-    anim: Animation
+    anim: Animation,
+    color: u32
 }
 impl Sphere {
-    pub fn new(center: Vector3, radius: f32, anim: Animation) -> Self {
-        Sphere { center, radius, anim }
+    pub fn new(center: Vector3, radius: f32, anim: Animation, color: u32) -> Self {
+        Sphere { center, radius, anim, color}
     }
 
     pub fn center(&self, _t: f32) -> Vector3 {
         self.center
+    }
+
+    pub fn color(&self) -> u32 {
+        self.color
     }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
@@ -129,6 +139,13 @@ pub enum Objects {
 }
 
 impl Objects {
+
+    pub fn color(&self) -> u32 {
+        match self {
+            Objects::Sphere(s) =>  s.color(),
+            Objects::InfinitePlane(p) => p.color(),
+        }
+    }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
         match self {

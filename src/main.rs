@@ -16,6 +16,8 @@ use minifb::{Key};
 const WIDTH: usize = 640;
 const HEIGHT: usize = 480;
 const FPS: usize = 60;
+const RED: u32 = 0xFF0000;
+const GREEN: u32 = 0x00FF00;
 
 const RAYSPEED: f32 = 1.0;
 
@@ -34,6 +36,7 @@ fn main() {
                 Vector3::new(5.0, 0.0, 0.0),
                 1.0,
                 Animation::Idle,
+                RED
             )),
     );
     let _ = world.add_object(
@@ -46,6 +49,7 @@ fn main() {
                     Vector3::new(0.0, 0.0, 1.0),
                     1.0
                 )),
+                GREEN
             )),
     );
     // let _ = world.add_object(

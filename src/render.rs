@@ -37,6 +37,14 @@ impl Hit {
     }
 }
 
+fn shade_color(color: u32, intensity: u32) -> u32 {
+    let red = ((color >> 16) & 0xff) * intensity / 255;
+    let green = ((color >> 8) & 0xff) * intensity / 255;
+    let blue = (color & 0xff) * intensity / 255;
+
+    (red << 16) | (green << 8) | blue
+}
+
 pub fn render(width: usize, height: usize, camera: &Camera, world: &World, t: f32, ray_speed: f32) -> Vec<u32>{
 
     let mut buffer: Vec<u32> = vec![0; width * height];
@@ -46,13 +54,16 @@ pub fn render(width: usize, height: usize, camera: &Camera, world: &World, t: f3
             
             let ray = camera.get_ray(x, y, width, height, ray_speed, t);
             let mut hit = Hit::new();
+            let mut color = 0x88a9f2;
 
             for (_, object) in world {
-
+                
+                let color_current = object.color();
                 let hit_current = object.intersect(&ray);
 
                 if hit_current.t() < hit.t() && hit_current.t() > 0.0 {
                     hit = hit_current;
+                    color = color_current;
                 }
                 
             }
@@ -69,10 +80,10 @@ pub fn render(width: usize, height: usize, camera: &Camera, world: &World, t: f3
                 let light_int = (diffuse + ambient).min(1.0);
 
                 let intensity = (light_int * 255.0) as u32;
-                buffer[y * width + x] = intensity << 16;
+                buffer[y * width + x] = shade_color(color, intensity);
             
             } else {
-                    buffer[y * width + x] = 0x88a9f2
+                    buffer[y * width + x] = color
             }
 
         }
