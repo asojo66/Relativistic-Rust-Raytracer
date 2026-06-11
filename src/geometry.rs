@@ -1,23 +1,27 @@
 use crate::vector::Vector3;
 use crate::ray::Ray;
 use crate::render::Hit;
+use crate::animation::Animation;
 use std::slice::Iter;
 
 pub struct InfinitePlane {
     point: Vector3,
     normal: Vector3,
+    anim: Animation
 }
 impl InfinitePlane {
 
-    pub fn new(point: Vector3, normal: Vector3) -> Self {
+    pub fn new(point: Vector3, normal: Vector3, anim: Animation) -> Self {
         
-        InfinitePlane {point, normal}
+        InfinitePlane {point, normal, anim}
 
     }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
 
-        let a = self.normal.dot(&(self.point - ray.origin()));
+        let point = self.position(ray.o_time());
+
+        let a = self.normal.dot(&(point - ray.origin()));
         let b = ray.direction().dot(&self.normal);
         
         let mut hit = Hit::new();
@@ -39,7 +43,17 @@ impl InfinitePlane {
             }
 
         }
+    }
 
+    pub fn position(&self, t: f32) -> Vector3 {
+
+        match &self.anim {
+            Animation::Idle => {self.point},
+            Animation::Straight(s) => {self.point + s.v()*t},
+            Animation::Orbit(_o) => {
+                self.point 
+            }
+        }
         
     }
 
@@ -48,15 +62,22 @@ impl InfinitePlane {
 pub struct Sphere {
     center: Vector3,
     radius: f32,
+    anim: Animation
 }
 impl Sphere {
-    pub fn new(center: Vector3, radius: f32) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Vector3, radius: f32, anim: Animation) -> Self {
+        Sphere { center, radius, anim }
+    }
+
+    pub fn center(&self, _t: f32) -> Vector3 {
+        self.center
     }
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
 
-        let oc = ray.origin() - self.center;
+        let center = self.position(ray.o_time());
+
+        let oc = ray.origin() - center;
         let a = ray.direction().norm2();
         let b = 2.0 * oc.dot(&ray.direction());
         let c = oc.dot(&oc) - self.radius * self.radius;
@@ -78,7 +99,7 @@ impl Sphere {
 
                 let c_time = t + ray.o_time();
 
-                return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - self.center).normalize());
+                return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
                 return_hit
 
             } else {
@@ -86,6 +107,18 @@ impl Sphere {
             }
             
         }
+    }
+
+    pub fn position(&self, t: f32) -> Vector3 {
+
+        match &self.anim {
+            Animation::Idle => {self.center},
+            Animation::Straight(s) => {self.center + s.v()*t},
+            Animation::Orbit(_o) => {
+                self.center
+            }
+        }
+        
     }
 
 }
@@ -99,14 +132,15 @@ impl Objects {
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
         match self {
+            Objects::Sphere(s) =>  s.intersect(ray),
+            Objects::InfinitePlane(p) => p.intersect(ray),
+        }
+    }
 
-            Objects::Sphere(s) => {
-                s.intersect(ray)
-            }
-
-            Objects::InfinitePlane(p) => {
-                p.intersect(ray)
-            }
+    pub fn position(&self, t:f32) -> Vector3 {
+        match self {
+            Objects::Sphere(s) => s.position(t),
+            Objects::InfinitePlane(p) => p.position(t),
         }
     }
 
