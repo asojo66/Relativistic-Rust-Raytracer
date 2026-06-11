@@ -13,6 +13,23 @@ pub struct Orbit {
     axis: Vector3,
     w: f32
 }
+impl Orbit {
+    pub fn new(center: Vector3, axis: Vector3, w: f32) -> Self {
+         Orbit { center, axis, w }
+    }
+
+    pub fn center(&self) -> Vector3 {
+        self.center
+    }
+
+    pub fn axis(&self) -> Vector3 {
+        self.axis
+    }
+    pub fn w(&self) -> f32 {
+        self.w
+    }
+
+}
 
 pub enum Animation {
     Idle,

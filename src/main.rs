@@ -9,7 +9,7 @@ mod animation;
 use crate::render::render;
 use crate::camera::Camera;
 use crate::geometry::{Objects, Sphere, InfinitePlane, World};
-use crate::animation::{Animation, Straight};
+use crate::animation::{Animation, Orbit, Straight};
 use crate::vector::Vector3;
 use minifb::{Key};
 
@@ -33,19 +33,29 @@ fn main() {
             Objects::Sphere(Sphere::new(
                 Vector3::new(5.0, 0.0, 0.0),
                 1.0,
-                Animation::Straight(Straight::new(
-                    Vector3::new(-1.0, 0.0, 0.0)
-                )),
+                Animation::Idle,
             )),
     );
     let _ = world.add_object(
-            "pln1",
-            Objects::InfinitePlane(InfinitePlane::new(
-                Vector3::new(0.0, 0.0, -1.0),
-                Vector3::new(0.0, 0.0, 1.0),
-                Animation::Idle
+            "sph2",
+            Objects::Sphere(Sphere::new(
+                Vector3::new(0.0, 0.0, 0.0),
+                1.0,
+                Animation::Orbit(Orbit::new(
+                    Vector3::new(5.0, 0.0, 0.0),
+                    Vector3::new(0.0, 0.0, 1.0),
+                    1.0
+                )),
             )),
-    ); //.expect("failed to add pln1 to world");
+    );
+    // let _ = world.add_object(
+    //         "pln1",
+    //         Objects::InfinitePlane(InfinitePlane::new(
+    //             Vector3::new(0.0, 0.0, -1.0),
+    //             Vector3::new(0.0, 0.0, 1.0),
+    //             Animation::Idle
+    //         )),
+    // );
 
     let mut cam = Camera::new(
                 vector::Vector3::new(0.0, 0.0, 0.0),

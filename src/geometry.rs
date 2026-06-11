@@ -114,8 +114,8 @@ impl Sphere {
         match &self.anim {
             Animation::Idle => {self.center},
             Animation::Straight(s) => {self.center + s.v()*t},
-            Animation::Orbit(_o) => {
-                self.center
+            Animation::Orbit(o) => {
+                (self.center - o.center()).rotate(o.axis(), o.w()*t)+ o.center()
             }
         }
         
