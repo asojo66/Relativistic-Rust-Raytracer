@@ -35,29 +35,23 @@ fn main() {
             Objects::Sphere(Sphere::new(
                 Vector3::new(5.0, 0.0, 0.0),
                 1.0,
-                Animation::Idle,
+                Animation::Straight(Straight::new(
+                    Vector3::new(-1.0,0.0,0.0)
+                )),
                 RED
             )),
     );
-    let _ = world.add_object(
-            "sph2",
-            Objects::Sphere(Sphere::new(
-                Vector3::new(0.0, 0.0, 0.0),
-                1.0,
-                Animation::Orbit(Orbit::new(
-                    Vector3::new(5.0, 0.0, 0.0),
-                    Vector3::new(0.0, 0.0, 1.0),
-                    1.0
-                )),
-                GREEN
-            )),
-    );
     // let _ = world.add_object(
-    //         "pln1",
-    //         Objects::InfinitePlane(InfinitePlane::new(
-    //             Vector3::new(0.0, 0.0, -1.0),
-    //             Vector3::new(0.0, 0.0, 1.0),
-    //             Animation::Idle
+    //         "sph2",
+    //         Objects::Sphere(Sphere::new(
+    //             Vector3::new(0.0, 0.0, 0.0),
+    //             1.0,
+    //             Animation::Orbit(Orbit::new(
+    //                 Vector3::new(5.0, 0.0, 0.0),
+    //                 Vector3::new(0.0, 0.0, 1.0),
+    //                 1.0
+    //             )),
+    //             GREEN
     //         )),
     // );
 

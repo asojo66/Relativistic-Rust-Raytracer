@@ -2,6 +2,7 @@ use crate::vector::Vector3;
 use crate::ray::Ray;
 use crate::render::Hit;
 use crate::animation::Animation;
+use std::mem::discriminant;
 use std::slice::Iter;
 
 pub struct InfinitePlane {
@@ -85,37 +86,127 @@ impl Sphere {
 
     pub fn intersect(&self, ray: &Ray) -> Hit {
 
-        let center = self.position(ray.o_time());
+        match &self.anim {
 
-        let oc = ray.origin() - center;
-        let a = ray.direction().norm2();
-        let b = 2.0 * oc.dot(&ray.direction());
-        let c = oc.dot(&oc) - self.radius * self.radius;
-        let discriminant: f32 = b * b - 4.0 * a * c;
-        
-        let mut return_hit = Hit::new();
+            Animation::Idle => {        
+                let center = self.position(ray.o_time());
 
-        if discriminant < 0.0 {
+                let oc = ray.origin() - center;
+                let a = ray.direction().norm2();
+                let b = 2.0 * oc.dot(&ray.direction());
+                let c = oc.dot(&oc) - self.radius * self.radius;
+                let discriminant: f32 = b * b - 4.0 * a * c;
+                
+                let mut return_hit = Hit::new();
 
-            return_hit
+                if discriminant < 0.0 {
 
-        } else  {
+                    return_hit
 
-            let d  = discriminant.sqrt() / (2.0 * a);
-            let e  = -b / (2.0 * a);
-            let t = (e + d).min(e - d)/ray.speed();
+                } else  {
 
-            if t > 0.0 {
+                    let d  = discriminant.sqrt() / (2.0 * a);
+                    let e  = -b / (2.0 * a);
+                    let t = (e + d).min(e - d)/ray.speed();
 
-                let c_time = t + ray.o_time();
+                    if t > 0.0 {
 
-                return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
-                return_hit
+                        let c_time = t + ray.o_time();
 
-            } else {
-                return_hit
+                        return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
+                        return_hit
+
+                    } else {
+                        return_hit
+                    }
+                    
+                }
             }
-            
+
+            Animation::Straight(s) => {
+
+                let mut hit = Hit::new();
+
+                let dp = ray.origin()-self.position(ray.o_time());
+                let dv = ray.speed()*ray.direction()-s.v();
+
+                let a = dv.norm2();
+
+                if a == 0.0{
+                    hit
+                } else {
+                
+                    let b = 2.0*dv.dot(&dp);
+                    let c = dp.norm2()-self.radius*self.radius;
+
+                    let discriminant = b*b - 4.0*a*c;
+                    
+                    if discriminant < 0.0 {
+                        hit
+                    } else  {
+
+                        let d  = discriminant.sqrt() / (2.0 * a);
+                        let e  = b / (2.0 * a);
+                        let mut t = -e + d;
+
+                        if t < 0.0 {
+                            t = t + 2.0*d;
+                            println!("{}", t);
+                        }
+
+                        if t > 0.0 {
+
+                            let c_time = t + ray.o_time();
+
+                            hit.set_hit(
+                                ray.at(c_time),
+                                c_time,
+                                (ray.at(c_time) - self.position(c_time)).normalize()
+                            );
+                            hit
+
+                        } else {
+                            hit
+                        }
+                        
+                    }
+                }
+            },
+            Animation::Orbit(_o) => {
+
+                let center = self.position(ray.o_time());
+
+                let oc = ray.origin() - center;
+                let a = ray.direction().norm2();
+                let b = 2.0 * oc.dot(&ray.direction());
+                let c = oc.dot(&oc) - self.radius * self.radius;
+                let discriminant: f32 = b * b - 4.0 * a * c;
+                
+                let mut return_hit = Hit::new();
+
+                if discriminant < 0.0 {
+
+                    return_hit
+
+                } else  {
+
+                    let d  = discriminant.sqrt() / (2.0 * a);
+                    let e  = -b / (2.0 * a);
+                    let t = (e + d).min(e - d)/ray.speed();
+
+                    if t > 0.0 {
+
+                        let c_time = t + ray.o_time();
+
+                        return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
+                        return_hit
+
+                    } else {
+                        return_hit
+                    }
+                    
+                }
+            }
         }
     }
 
