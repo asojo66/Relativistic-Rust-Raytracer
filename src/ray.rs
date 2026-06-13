@@ -17,8 +17,8 @@ impl Ray {
         }
     }
 
-    pub fn at(&self, t: f32) -> Vector3 {
-        self.origin + self.direction * self.speed * (t-self.o_time)
+    pub fn at(&self, t: f32, local_speed: f32) -> Vector3 {
+        self.origin + self.direction * local_speed * (t-self.o_time)
     }
 
     pub fn origin(&self) -> Vector3 {

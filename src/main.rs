@@ -19,7 +19,7 @@ const FPS: usize = 60;
 const RED: u32 = 0xFF0000;
 const GREEN: u32 = 0x00FF00;
 
-const RAYSPEED: f32 = 1.0;
+const RAYSPEED: f32 = 1.1;
 
 fn main() {
 
@@ -36,7 +36,7 @@ fn main() {
                 Vector3::new(5.0, 0.0, 0.0),
                 1.0,
                 Animation::Straight(Straight::new(
-                    Vector3::new(-1.0,0.0,0.0)
+                    Vector3::new(-10.0,0.0,0.0)
                 )),
                 RED
             )),

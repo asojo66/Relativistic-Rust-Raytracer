@@ -43,7 +43,7 @@ impl InfinitePlane {
 
             } else {
                 let o_time = ray.o_time();
-                hit.set_hit(ray.at(t+o_time), t + o_time , self.normal);
+                hit.set_hit(ray.at(t+o_time, ray.speed()), t + o_time , self.normal);
                 hit
 
             }
@@ -113,7 +113,11 @@ impl Sphere {
 
                         let c_time = t + ray.o_time();
 
-                        return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
+                        return_hit.set_hit(
+                            ray.at(c_time, ray.speed()),
+                            c_time,
+                            (ray.at(c_time, ray.speed()) - center).normalize()
+                        );
                         return_hit
 
                     } else {
@@ -127,8 +131,11 @@ impl Sphere {
 
                 let mut hit = Hit::new();
 
+                let mut local_speed = ray.direction().dot(&s.v());
+                local_speed = (local_speed*local_speed+ray.speed()*ray.speed()-s.v().norm2()).sqrt() - local_speed/2.0;
+
                 let dp = ray.origin()-self.position(ray.o_time());
-                let dv = ray.speed()*ray.direction()-s.v();
+                let dv = local_speed*ray.direction()+s.v();
 
                 let a = dv.norm2();
 
@@ -146,12 +153,11 @@ impl Sphere {
                     } else  {
 
                         let d  = discriminant.sqrt() / (2.0 * a);
-                        let e  = b / (2.0 * a);
-                        let mut t = -e + d;
+                        let e  = -b / (2.0 * a);
+                        let mut t = e - d;
 
                         if t < 0.0 {
                             t = t + 2.0*d;
-                            println!("{}", t);
                         }
 
                         if t > 0.0 {
@@ -159,9 +165,9 @@ impl Sphere {
                             let c_time = t + ray.o_time();
 
                             hit.set_hit(
-                                ray.at(c_time),
+                                ray.at(c_time, local_speed),
                                 c_time,
-                                (ray.at(c_time) - self.position(c_time)).normalize()
+                                (ray.at(c_time, local_speed) - self.position(-t + ray.o_time())).normalize()
                             );
                             hit
 
@@ -198,7 +204,11 @@ impl Sphere {
 
                         let c_time = t + ray.o_time();
 
-                        return_hit.set_hit(ray.at(c_time), c_time, (ray.at(c_time) - center).normalize());
+                        return_hit.set_hit(
+                            ray.at(c_time, ray.speed()),
+                            c_time,
+                            (ray.at(c_time, ray.speed()) - center).normalize()
+                        );
                         return_hit
 
                     } else {
